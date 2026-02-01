@@ -54,7 +54,7 @@ def cleanup_streak_alerts_on_win(user: User) -> None:
                 metric_value=Decimal(0),
                 window_start=now,
                 window_end=now,
-                message_rendered=f"Streak broken - reset (threshold: {rule.threshold_value})",
+                message_rendered=f"✅ Streak broken - reset (threshold: {rule.threshold_value})",
                 sent_at=None,
             )
             logger.info(f"[CLEANUP] User {user.id}: Created reset alert ID {alert.id} with metric_value=0")
@@ -130,7 +130,7 @@ def check_and_send_streak_loss_alert(user: User) -> None:
                 metric_value=Decimal(current_streak),
                 window_start=now,
                 window_end=now,
-                message_rendered=f"{current_streak} losses in a row (threshold: {threshold})",
+                message_rendered=f"🟥 {current_streak} losses in a row (threshold: {threshold}) 🟥",
                 sent_at=None,
             )
 
