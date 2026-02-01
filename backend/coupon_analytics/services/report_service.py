@@ -202,24 +202,24 @@ def format_report_message(report_data: dict) -> str:
     }.get(frequency, '📋')
 
     lines = [
-        f"{freq_emoji} <b>RAPORT {frequency}</b>",
+        f"{freq_emoji} <b>{frequency} REPORT</b>",
         "",
-        "📊 <b>Statystyki kuponów:</b>",
-        f"  Razem: {data['total_coupons']}",
-        f"  Wygrane: {data['won']} ✅",
-        f"  Przegrane: {data['lost']} ❌",
-        f"  W trakcie: {data['in_progress']} ⏳",
+        "📊 <b>Coupon statistics:</b>",
+        f"  Total: {data['total_coupons']}",
+        f"  Won: {data['won']} ✅",
+        f"  Lost: {data['lost']} ❌",
+        f"  In progress: {data['in_progress']} ⏳",
         "",
-        "💰 <b>Finanse:</b>",
-        f"  Stawki: {data['total_stake']} PLN",
-        f"  Wygrane: {data['total_payout']} PLN",
-        f"  Zysk/Strata: {data['profit']} PLN",
+        "💰 <b>Finances:</b>",
+        f"  Stakes: {data['total_stake']} PLN",
+        f"  Payouts: {data['total_payout']} PLN",
+        f"  Profit/Loss: {data['profit']} PLN",
         "",
-        "📈 <b>Wskaźniki:</b>",
+        "📈 <b>Metrics:</b>",
         f"  Win rate: {data['win_rate']}%",
         f"  ROI: {data['roi']}%",
         "",
-        f"⏰ Wygenerowano: {generated_at[:19]}",
+        f"⏰ Generated at: {generated_at[:19]}",
     ]
 
     return "\n".join(lines)

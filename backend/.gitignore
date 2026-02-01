@@ -60,3 +60,5 @@ node_modules/
 npm-debug.log
 yarn-error.log
 pg_data/
+/coupons/tests/
+/tests/

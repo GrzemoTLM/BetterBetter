@@ -3,10 +3,11 @@ Testy dla trybu filtrowania kuponów: won_coupons vs won_bets
 """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from decimal import Decimal
 
-from coupons.models import Coupon, Bet, Event, BetTypeDict, Discipline, Bookmaker
-from finances.models import BookmakerAccountModel, Currency
+from coupons.models import Coupon, Bet, Event, BetTypeDict, Discipline, Bookmaker, Currency
+from finances.models import BookmakerAccountModel
 from coupon_analytics.models.queries import AnalyticsQuery, AnalyticsQueryGroup, AnalyticsQueryCondition
 from coupon_analytics.services.query_builder import AnalyticsQueryBuilder
 
@@ -28,13 +29,13 @@ class FilterModeTestCase(TestCase):
         self.currency = Currency.objects.create(
             code='PLN',
             name='Polish Zloty',
-            symbol='zł'
+            symbol='zł',
+            value=Decimal('1.00')
         )
         
         # Bukmacher
         self.bookmaker = Bookmaker.objects.create(
-            name='Test Bookie',
-            country='PL'
+            name='Test Bookie'
         )
         
         # Konto bukmachera
@@ -59,15 +60,19 @@ class FilterModeTestCase(TestCase):
         
         # Eventy
         self.event1 = Event.objects.create(
+            name='Barcelona vs Real Madrid',
             home_team='Barcelona',
             away_team='Real Madrid',
-            discipline=self.discipline
+            discipline=self.discipline,
+            start_time=timezone.now()
         )
         
         self.event2 = Event.objects.create(
+            name='Bayern vs Dortmund',
             home_team='Bayern',
             away_team='Dortmund',
-            discipline=self.discipline
+            discipline=self.discipline,
+            start_time=timezone.now()
         )
         
         # SCENARIUSZ 1: Kupon SOLO wygrany

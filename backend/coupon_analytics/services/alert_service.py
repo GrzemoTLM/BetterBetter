@@ -77,7 +77,7 @@ def _render_message(rule: AlertRule, *, metric_value: Decimal | None, start: dat
     msg = rule.message or ''
     repl = {
         '{metric}': rule.metric,
-        '{value}': str(metric_value) if metric_value is not None else 'None',
+        '{value}': str(metric_value) if metric_value is not None else '∅',
         '{threshold}': str(rule.threshold_value),
         '{start}': start.date().isoformat(),
         '{end}': end.date().isoformat(),

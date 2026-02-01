@@ -10,8 +10,6 @@ django.setup()
 from coupons.models.bookmaker import Bookmaker
 
 
-# Lista wszystkich legalnych polskich bukmacherów
-# Podatek od zakładów w Polsce wynosi 12%, więc tax_multiplier = 0.88
 POLISH_BOOKMAKERS = [
     {"name": "STS", "tax_multiplier": 0.88},
     {"name": "Fortuna", "tax_multiplier": 0.88},
