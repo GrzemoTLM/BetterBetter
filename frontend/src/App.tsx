@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { DateFormatProvider } from './context/DateFormatContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { useAuth } from './hooks/useAuth';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import Settings from './components/Settings';
-import Coupons from './components/Coupons';
-import Statistics from './components/Statistics';
-import AdminConsole from './components/AdminConsole';
-import Help from './components/Help';
-import Login from './components/Login';
-import TwoFA from './components/TwoFA';
-import Register from './components/Register';
-import ResetPassword from './components/ResetPassword';
-import KPICards from './components/KPICards';
-import FilterBar from './components/FilterBar';
-import SummaryStats from './components/SummaryStats';
-import QuickActions from './components/QuickActions';
-import TransactionTable from './components/TransactionTable';
-import MoneyFlowBarChart from './components/MoneyFlowBarChart';
+import Sidebar from './components/Shared/layout/Sidebar';
+import Dashboard from './components/Dashboard/sections/Dashboard';
+import Settings from './components/Settings/sections/Settings';
+import Coupons from './components/Coupons/sections/Coupons';
+import Statistics from './components/Statistics/sections/Statistics';
+import AdminConsole from './components/Admin/sections/AdminConsole';
+import Help from './components/Help/sections/Help';
+import Login from './components/Auth/Login';
+import TwoFA from './components/Auth/TwoFA';
+import Register from './components/Auth/Register';
+import ResetPassword from './components/Auth/ResetPassword';
+import KPICards from './components/Dashboard/widgets/KPICards';
+import FilterBar from './components/MoneyFlow/widgets/FilterBar';
+import SummaryStats from './components/Dashboard/widgets/SummaryStats';
+import QuickActions from './components/Dashboard/widgets/QuickActions';
+import TransactionTable from './components/MoneyFlow/tables/TransactionTable';
+import MoneyFlowBarChart from './components/MoneyFlow/charts/MoneyFlowBarChart';
 import apiService from './services/api';
 import type { Transaction, TransactionSummary } from './types/finances';
 import './App.css';
@@ -61,11 +61,59 @@ function AppContent() {
     }
   }, [activeView, isSuperuser]);
 
+  const fetchMoneyFlowData = useCallback(async (filters?: MoneyFlowFilters) => {
+    if (!isAuthenticated) return;
+
+    setMoneyFlowLoading(true);
+    setMoneyFlowError(null);
+
+    try {
+      const [transactionsData, summaryData] = await Promise.all([
+        apiService.fetchTransactions(filters),
+        apiService.fetchTransactionsSummary(), // Get unfiltered summary for baseline
+      ]);
+
+      setTransactions(transactionsData);
+
+      let filtered = summaryData;
+
+      if (filters && Object.keys(filters).length > 0) {
+        const totalDeposited = transactionsData
+          .filter((t) => t.transaction_type === 'DEPOSIT')
+          .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
+
+        const totalWithdrawn = transactionsData
+          .filter((t) => t.transaction_type === 'WITHDRAWAL')
+          .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
+
+        filtered = {
+          total_deposited: totalDeposited,
+          total_withdrawn: totalWithdrawn,
+          net_deposits: totalDeposited - totalWithdrawn,
+          total_transactions: transactionsData.length,
+        };
+
+        setFilteredSummary(filtered);
+      } else {
+        setSummary({
+          ...summaryData,
+          total_transactions: transactionsData.length,
+        });
+        setFilteredSummary(null);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load money flow data';
+      setMoneyFlowError(errorMessage);
+    } finally {
+      setMoneyFlowLoading(false);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (isAuthenticated && activeView === 'money-flow') {
       fetchMoneyFlowData(moneyFlowFilters);
     }
-  }, [isAuthenticated, activeView]);
+  }, [isAuthenticated, activeView, moneyFlowFilters, fetchMoneyFlowData]);
 
   if (isLoading) {
     return (
@@ -150,53 +198,6 @@ function AppContent() {
     setChallengeId(null);
   };
 
-  const fetchMoneyFlowData = async (filters?: MoneyFlowFilters) => {
-    if (!isAuthenticated) return;
-
-    setMoneyFlowLoading(true);
-    setMoneyFlowError(null);
-
-    try {
-      const [transactionsData, summaryData] = await Promise.all([
-        apiService.fetchTransactions(filters),
-        apiService.fetchTransactionsSummary(), // Get unfiltered summary for baseline
-      ]);
-
-      setTransactions(transactionsData);
-
-      let filtered = summaryData;
-
-      if (filters && Object.keys(filters).length > 0) {
-        const totalDeposited = transactionsData
-          .filter((t) => t.transaction_type === 'DEPOSIT')
-          .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
-
-        const totalWithdrawn = transactionsData
-          .filter((t) => t.transaction_type === 'WITHDRAWAL')
-          .reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0);
-
-        filtered = {
-          total_deposited: totalDeposited,
-          total_withdrawn: totalWithdrawn,
-          net_deposits: totalDeposited - totalWithdrawn,
-          total_transactions: transactionsData.length,
-        };
-
-        setFilteredSummary(filtered);
-      } else {
-        setSummary({
-          ...summaryData,
-          total_transactions: transactionsData.length,
-        });
-        setFilteredSummary(null);
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load money flow data';
-      setMoneyFlowError(errorMessage);
-    } finally {
-      setMoneyFlowLoading(false);
-    }
-  };
 
   const handleApplyFilters = (filters: MoneyFlowFilters) => {
     setMoneyFlowFilters(filters);

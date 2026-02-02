@@ -14,9 +14,13 @@ interface ExportData {
   formatDate: (date: string) => string;
 }
 
+// Pomocniczy typ dla jsPDF z wlasnoscia lastAutoTable.
+type JsPdfWithAutoTable = jsPDF & { lastAutoTable?: { finalY?: number } };
+
 export const exportTransactionsToPDF = (data: ExportData) => {
   const { filteredSummary, transactions, filters, formatDate } = data;
   const doc = new jsPDF();
+  const docWithAutoTable = doc as JsPdfWithAutoTable;
 
   doc.setFontSize(18);
   doc.text('Transaction Report', 14, 22);
@@ -88,7 +92,7 @@ export const exportTransactionsToPDF = (data: ExportData) => {
         margin: { left: 14 }
       });
 
-      yPosition = (doc as any).lastAutoTable.finalY + 10;
+      yPosition = (docWithAutoTable.lastAutoTable?.finalY ?? yPosition) + 10;
     }
 
     if (filteredSummary.by_date && filteredSummary.by_date.length > 0) {
@@ -116,7 +120,7 @@ export const exportTransactionsToPDF = (data: ExportData) => {
         margin: { left: 14 }
       });
 
-      yPosition = (doc as any).lastAutoTable.finalY + 10;
+      yPosition = (docWithAutoTable.lastAutoTable?.finalY ?? yPosition) + 10;
     }
   }
 

@@ -1,2 +1,2 @@
-export { default as SelectBookmakerModal } from './SelectBookmakerModal';
+export { default as SelectBookmakerModal } from './Settings/modals/SelectBookmakerModal';
 
