@@ -192,22 +192,26 @@ export type BookmakerAccountsSummaryItem = {
 
 export type BookmakerAccountsSummary = BookmakerAccountsSummaryItem[];
 
-export interface Report {
+export interface PeriodicReport {
   id: number;
   query?: Record<string, unknown> | null;
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  query_name?: string | null;
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
   delivery_method: string;
   delivery_methods: string[];
   is_active: boolean;
+  schedule_payload?: Record<string, unknown> | null;
+  next_run?: string | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface CreateReportRequest {
   query?: Record<string, unknown> | null;
-  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY';
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
   delivery_method?: string;
   delivery_methods: string[];
+  is_active?: boolean;
 }
 
 export interface ReportToggleResponse {
@@ -372,6 +376,7 @@ class ApiService {
           try {
             return JSON.stringify(data);
           } catch {
+            return 'Unable to parse error response';
           }
         }
       }
@@ -455,7 +460,8 @@ class ApiService {
         });
       }
     }
-    catch {
+    catch (error) {
+      console.warn('[API] logout failed:', error);
     }
     finally {
       this.removeToken();
@@ -512,28 +518,28 @@ class ApiService {
     }
   }
 
-  async getReports(): Promise<any[]> {
+  async getReports(): Promise<PeriodicReport[]> {
     try {
       const response = await this.axiosInstance.get('/api/analytics/reports/');
-      return response.data;
+      return response.data as PeriodicReport[];
     } catch (error) {
       throw new Error(this.getErrorMessage(error));
     }
   }
 
-  async createReport(payload: any): Promise<any> {
+  async createReport(payload: CreateReportRequest): Promise<PeriodicReport> {
     try {
       const response = await this.axiosInstance.post('/api/analytics/reports/', payload);
-      return response.data;
+      return response.data as PeriodicReport;
     } catch (error) {
       throw new Error(this.getErrorMessage(error));
     }
   }
 
-  async updateReport(id: number, payload: any): Promise<any> {
+  async updateReport(id: number, payload: Partial<CreateReportRequest> & { is_active?: boolean }): Promise<PeriodicReport> {
     try {
       const response = await this.axiosInstance.patch(`/api/analytics/reports/${id}/`, payload);
-      return response.data;
+      return response.data as PeriodicReport;
     } catch (error) {
       throw new Error(this.getErrorMessage(error));
     }
@@ -547,10 +553,10 @@ class ApiService {
     }
   }
 
-  async sendTestReport(id: number): Promise<any> {
+  async sendTestReport(id: number): Promise<unknown> {
     try {
       const response = await this.axiosInstance.post(`/api/analytics/reports/${id}/send/`);
-      return response.data;
+      return response.data as unknown;
     } catch (error) {
       throw new Error(this.getErrorMessage(error));
     }

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext } from 'react';
 
 export interface SettingsRefreshContextType {

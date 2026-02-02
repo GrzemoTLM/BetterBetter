@@ -8,4 +8,7 @@ node_modules
 .gitignore
 .git
 dist
-
+*.tsbuildinfo
+.cache
+.vite
+tsconfig.tsbuildinfo

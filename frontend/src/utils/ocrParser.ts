@@ -7,8 +7,15 @@ export interface ParsedOcrBet {
   odds: string;
 }
 
+// Minimalny ksztalt danych OCR potrzebny do parsowania tekstu.
+type OcrTextSource = {
+  detailed_result?: { text?: string };
+  raw_text?: string;
+};
+
 export function parseOcrToBets(ocr: OcrExtractResponse): ParsedOcrBet[] {
-  const text = (ocr as any).detailed_result?.text ?? (ocr as any).raw_text ?? '';
+  const source = ocr as OcrTextSource;
+  const text = source.detailed_result?.text ?? source.raw_text ?? '';
   const lines = text
     .split(/\r?\n/)
     .map((l: string) => l.trim())
@@ -58,4 +65,3 @@ export function parseOcrToBets(ocr: OcrExtractResponse): ParsedOcrBet[] {
 
   return bets;
 }
-
