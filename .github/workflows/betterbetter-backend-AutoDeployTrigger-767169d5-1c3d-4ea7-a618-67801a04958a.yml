@@ -1,0 +1,49 @@
+name: Trigger auto deployment for betterbetter-backend
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/betterbetter-backend-AutoDeployTrigger-767169d5-1c3d-4ea7-a618-67801a04958a.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.BETTERBETTERBACKEND_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.BETTERBETTERBACKEND_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.BETTERBETTERBACKEND_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/backend/Dockerfile.server
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: bettetbetter.azurecr.io
+          registryUsername: ${{ secrets.BETTERBETTERBACKEND_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.BETTERBETTERBACKEND_REGISTRY_PASSWORD }}
+          containerAppName: betterbetter-backend
+          resourceGroup: DefaultResourceGroup-EAU
+          imageToBuild: bettetbetter.azurecr.io/betterbetter-backend:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
